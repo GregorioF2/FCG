@@ -51,14 +51,7 @@ const addPropsToImage = (image) => {
   });
 };
 
-const closestPaletColor = (color, factor) => {
-  const step = Math.round(255 / factor);
-  const availableColors = [];
-  for (let currentColor = 0; currentColor < 255; currentColor += step) {
-    availableColors.push(currentColor);
-  }
-  availableColors.push(255);
-
+const closestPaletColor = (color, availableColors) => {
   let closestColor = 0;
   let closestError = 255;
   for (let currentColor of availableColors) {
@@ -69,6 +62,16 @@ const closestPaletColor = (color, factor) => {
     }
   }
   return closestColor;
+};
+
+const getAvailableColors = (factor) => {
+  const step = Math.round(255 / factor);
+  const availableColors = [];
+  for (let currentColor = 0; currentColor < 255; currentColor += step) {
+    availableColors.push(currentColor);
+  }
+  availableColors.push(255);
+  return availableColors;
 };
 
 const setPixelAndNeighbors = (
@@ -112,6 +115,7 @@ function dither(image, factor) {
   addPropsToImage(image);
   const height = image.height;
   const width = image.width;
+  const availableColors = getAvailableColors(factor);
 
   for (let row = 0; row < height; row += 1) {
     for (let column = 0; column < width; column += 1) {
@@ -119,9 +123,9 @@ function dither(image, factor) {
       const oldGreen = image.green(row, column);
       const oldBlue = image.blue(row, column);
 
-      const newRed = closestPaletColor(oldRed, factor);
-      const newGreen = closestPaletColor(oldGreen, factor);
-      const newBlue = closestPaletColor(oldBlue, factor);
+      const newRed = closestPaletColor(oldRed, availableColors);
+      const newGreen = closestPaletColor(oldGreen, availableColors);
+      const newBlue = closestPaletColor(oldBlue, availableColors);
 
       const redError = oldRed - newRed;
       const greenError = oldGreen - newGreen;
@@ -163,19 +167,16 @@ function dither(image, factor) {
 
 // Imágenes a restar (imageA y imageB) y el retorno en result
 function substraction(imageA, imageB, result) {
-  const height 	= imageA.height;
-  const width 	= imageA.width;
+  const height = imageA.height;
+  const width = imageA.width;
   var A = imageA.data;
   var B = imageB.data;
   var AB = result.data;
-  
-  
-	for (i = 0; i < imageA.data.length; i += 4) 
-  {          
-    AB[i]=   A[i] - B[i];
-	AB[i+1]= A[i+1] - B[i+1];
-	AB[i+2]= A[i+2] - B[i+2];
-	AB[i+3]= AB[i+3];
-  } 
-	
+
+  for (i = 0; i < imageA.data.length; i += 4) {
+    AB[i] = A[i] - B[i];
+    AB[i + 1] = A[i + 1] - B[i + 1];
+    AB[i + 2] = A[i + 2] - B[i + 2];
+    AB[i + 3] = AB[i + 3];
+  }
 }
