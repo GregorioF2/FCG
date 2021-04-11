@@ -86,26 +86,74 @@ const setPixelAndNeighbors = (
     image[key] = {
       row,
       column: column + 1,
-      value: image[key](row, column + 1) + error * (7 / 16),
+      value: image[key](row, column + 1) + error * (7 / 48),
+    };
+  if (column + 2 < width)
+    image[key] = {
+      row,
+      column: column + 2,
+      value: image[key](row, column + 2) + error * (5 / 48),
+    };
+  if (column - 2 >= 0 && row + 1 < height)
+    image[key] = {
+      row: row + 1,
+      column: column -2,
+      value: image[key](row + 1, column - 2) + error * (3 / 48),
     };
   if (column - 1 >= 0 && row + 1 < height)
     image[key] = {
       row: row + 1,
       column: column - 1,
-      value: image[key](row + 1, column - 1) + error * (3 / 16),
+      value: image[key](row + 1, column -1) + error * (5 / 48),
     };
   if (row + 1 < height)
     image[key] = {
-      row: row + 1,
-      column: column,
-      value: image[key](row + 1, column) + error * (5 / 16),
-    };
+      row,
+      column: column + 1,
+      value: image[key](row + 1, column) + error * (7 / 48),
+    };	
   if (column + 1 < width && row + 1 < height)
     image[key] = {
       row: row + 1,
       column: column + 1,
-      value: image[key](row + 1, column + 1) + error * (1 / 16),
+      value: image[key](row + 1, column+1) + error * (5 / 48),
+    };	
+  if (column + 2 < width && row + 1 < height)
+    image[key] = {
+      row: row + 1,
+      column: column + 2,
+      value: image[key](row + 1, column+2) + error * (3 / 48),
+    };	
+  if (column - 2 >= 0 && row + 2 < height)
+    image[key] = {
+      row: row + 2,
+      column: column - 2,
+      value: image[key](row + 2, column - 2) + error * (1 / 48),
     };
+  if (column - 1 >= 0 && row + 2 < height)
+    image[key] = {
+      row: row + 2,
+      column: column - 1,
+      value: image[key](row + 2, column - 1) + error * (3 / 48),
+    };	
+  if (row + 2 < height)
+    image[key] = {
+      row: row + 2,
+      column: column,
+      value: image[key](row + 2, column) + error * (5 / 48),
+    };	
+  if (column + 1 < height && row + 2 < height)
+    image[key] = {
+      row: row + 2,
+      column: column +1,
+      value: image[key](row + 2, column + 1) + error * (3 / 48),
+    };	
+  if (column + 1 < height && row + 2 < height)
+    image[key] = {
+      row: row + 2,
+      column: column +1,
+      value: image[key](row + 2, column + 2) + error * (1 / 48),
+    };		
 };
 
 function dither(image, factor) {
