@@ -53,7 +53,6 @@ function BuildTransform(positionX, positionY, rotation, scale) {
   );
 
   const a = ComposeTransforms(scaleMatrix, rotationMatrix);
-	prettyPrint(a);
   const b = ComposeTransforms(a, translationMatrix);
   return b;
 }

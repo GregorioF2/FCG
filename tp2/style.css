@@ -5,6 +5,7 @@ html {
 	font-family: Arial;
 }
 body {
+	overflow: hidden;
 	background-image: url(space_background.png);
     background-size: 1600px;
 	padding: 0;
@@ -27,6 +28,9 @@ body {
 	height: 100px;
 	left: -50px;
 	top: -50px;
+}
+.meteorite {
+	position: fixed;
 }
 #controls {
 	position: fixed;
