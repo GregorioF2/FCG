@@ -27,7 +27,6 @@ class CurveDrawer
 		for ( var i=0; i<this.steps; ++i ) {
 			tv.push( i / (this.steps-1) );
 		}
-		
 		// [Completar] Creacion del vertex buffer y seteo de contenido
 		this.buffer = gl.createBuffer();
 		gl.bindBuffer(
@@ -81,11 +80,6 @@ class CurveDrawer
 	}
 }
 
-// pos = pow(1.0 - t, 3.0) * p0
-// + 3.0 * pow(1.0 - t, 2.0) * p1
-// + 3.0 * pow(1.0 - t, 2.0) * p2
-// + pow(t, 3.0) * p3;
-
 // Vertex Shader
 //[Completar] El vertex shader se ejecuta una vez por cada punto en mi curva (parámetro step). No confundir punto con punto de control.
 // Deberán completar con la definición de una Bezier Cúbica para un punto t. Algunas consideraciones generales respecto a GLSL: si
@@ -102,8 +96,8 @@ var curvesVS = `
 	varying vec2 pos;
 	void main()
 	{ 
-		pos = pow(1.0 - t, 3.0) * p0
-		+ 3.0 * pow(1.0 - t, 2.0) * p1
+		pos = pow((1.0 - t), 3.0) * p0
+		+ 3.0 * pow((1.0 - t), 2.0) * t * p1
 		+ 3.0 * (1.0 - t) * pow(t, 2.0) * p2
 		+ pow(t, 3.0) * p3;
 
