@@ -41,8 +41,6 @@
 
 function GetModelViewProjection( projectionMatrix, translationX, translationY, translationZ, rotationX, rotationY )
 {
-	// [COMPLETAR] Modificar el código para formar la matriz de transformación.
-	
 	const cosX = Math.cos(rotationX)
 	const sinX = Math.sin(rotationX)
 	const cosY = Math.cos(rotationY)
@@ -83,6 +81,16 @@ class MeshDrawer
 	// El constructor es donde nos encargamos de realizar las inicializaciones necesarias. 
 	constructor()
 	{
+		this.prog   = InitShaderProgram( meshVS, meshFS );
+		this.mvp = gl.getUniformLocation( this.prog, 'mvp' );
+		this.swap = gl.getUniformLocation( this.prog, 'swap' );
+
+		this.pos = gl.getAttribLocation( this.prog, 'pos' );
+
+
+		this.vertexBuffer = gl.createBuffer();
+		
+
 		// [COMPLETAR] inicializaciones
 
 		// 1. Compilamos el programa de shaders
@@ -106,19 +114,42 @@ class MeshDrawer
 	{
 		// [COMPLETAR] Actualizar el contenido del buffer de vértices
 		this.numTriangles = vertPos.length / 3;
+
+		gl.bindBuffer(
+			gl.ARRAY_BUFFER, 
+			this.vertexBuffer
+		);
+
+		gl.bufferData(
+			gl.ARRAY_BUFFER,
+			new Float32Array(vertPos),
+			gl.STATIC_DRAW
+		);
 	}
 	
 	// Esta función se llama cada vez que el usuario cambia el estado del checkbox 'Intercambiar Y-Z'
 	// El argumento es un boleano que indica si el checkbox está tildado
 	swapYZ( swap )
 	{
-		// [COMPLETAR] Setear variables uniformes en el vertex shader
+		gl.useProgram( this.prog );
+		gl.uniform1i(this.swap, swap ? 1 : 0);	
 	}
 	
 	// Esta función se llama para dibujar la malla de triángulos
 	// El argumento es la matriz de transformación, la misma matriz que retorna GetModelViewProjection
 	draw( trans )
 	{
+		gl.useProgram( this.prog );
+
+		gl.uniformMatrix4fv( this.mvp, false, trans );
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
+		gl.vertexAttribPointer( this.pos, 3, gl.FLOAT, false, 0, 0 );
+		gl.enableVertexAttribArray( this.pos )
+
+		gl.drawArrays( gl.TRIANGLES, 0, this.numTriangles * 3 );
+
+
 		// [COMPLETAR] Completar con lo necesario para dibujar la colección de triángulos en WebGL
 		
 		// 1. Seleccionamos el shader
@@ -153,9 +184,23 @@ class MeshDrawer
 var meshVS = `
 	attribute vec3 pos;
 	uniform mat4 mvp;
+	uniform int swap;
+
+	varying float x;
+	varying float y;
+	varying float z;
+
 	void main()
 	{ 
-		gl_Position = mvp * vec4(pos,1);
+		x = pos.x;
+		if (swap == 1) {
+			y = pos.z;
+			z = pos.y;
+		} else {
+			y = pos.y;
+			z = pos.z;
+		}
+		gl_Position = mvp * vec4(x, y, z, 1);
 	}
 `;
 
