@@ -302,8 +302,10 @@ function LoadTexture( param )
 	if ( param.files && param.files[0] ) 
 	{
 		var reader = new FileReader();
+		console.log(`reader: `, reader);
 		reader.onload = function(e) 
 		{
+			console.log(`e: `, e);
 			var img = document.getElementById('texture-img');
 			img.onload = function() 
 			{

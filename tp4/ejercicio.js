@@ -84,11 +84,15 @@ class MeshDrawer
 		this.prog   = InitShaderProgram( meshVS, meshFS );
 		this.mvp = gl.getUniformLocation( this.prog, 'mvp' );
 		this.swap = gl.getUniformLocation( this.prog, 'swap' );
+		this.sampler = gl.getUniformLocation( this.prog, 'textGPU' );
 
 		this.pos = gl.getAttribLocation( this.prog, 'pos' );
-
+		this.textCoord = gl.getAttribLocation(this.prog, 'textCoord');
 
 		this.vertexBuffer = gl.createBuffer();
+		this.textCoordsBuffer = gl.createBuffer();
+
+		this.texture = gl.createTexture();
 		
 
 		// [COMPLETAR] inicializaciones
@@ -125,6 +129,16 @@ class MeshDrawer
 			new Float32Array(vertPos),
 			gl.STATIC_DRAW
 		);
+
+		gl.bindBuffer(
+			gl.ARRAY_BUFFER,
+			this.textCoordsBuffer
+		);
+		gl.bufferData(
+			gl.ARRAY_BUFFER,
+			new Float32Array(texCoords),
+			gl.STATIC_DRAW
+		);
 	}
 	
 	// Esta función se llama cada vez que el usuario cambia el estado del checkbox 'Intercambiar Y-Z'
@@ -142,10 +156,15 @@ class MeshDrawer
 		gl.useProgram( this.prog );
 
 		gl.uniformMatrix4fv( this.mvp, false, trans );
+		gl.uniform1i(this.sampler, 0);
 
 		gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer );
 		gl.vertexAttribPointer( this.pos, 3, gl.FLOAT, false, 0, 0 );
-		gl.enableVertexAttribArray( this.pos )
+		gl.enableVertexAttribArray( this.pos );
+
+		gl.bindBuffer( gl.ARRAY_BUFFER, this.textCoordsBuffer );
+		gl.vertexAttribPointer( this.textCoord, 2, gl.FLOAT, false, 0, 0 );
+		gl.enableVertexAttribArray( this.textCoord );
 
 		gl.drawArrays( gl.TRIANGLES, 0, this.numTriangles * 3 );
 
@@ -167,14 +186,17 @@ class MeshDrawer
 	// El argumento es un componente <img> de html que contiene la textura. 
 	setTexture( img )
 	{
-		// [COMPLETAR] Binding de la textura
+		gl.bindTexture(gl.TEXTURE_2D, this.texture)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNISGNED_BYTE, img);
+		gl.generateMipmap( gl.TEXTURE_2D );
 	}
 	
 	// Esta función se llama cada vez que el usuario cambia el estado del checkbox 'Mostrar textura'
 	// El argumento es un boleano que indica si el checkbox está tildado
 	showTexture( show )
 	{
-		// [COMPLETAR] Setear variables uniformes en el fragment shader
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, this.texture)
 	}
 }
 
@@ -183,6 +205,7 @@ class MeshDrawer
 // Las constantes en punto flotante necesitan ser expresadas como x.y, incluso si son enteros: ejemplo, para 4 escribimos 4.0
 var meshVS = `
 	attribute vec3 pos;
+	attribute vec2 textCoord;
 	uniform mat4 mvp;
 	uniform int swap;
 
@@ -190,8 +213,11 @@ var meshVS = `
 	varying float y;
 	varying float z;
 
+	varying vec2 texCoord;
+
 	void main()
 	{ 
+		texCoord = textCoord;
 		x = pos.x;
 		if (swap == 1) {
 			y = pos.z;
@@ -205,10 +231,13 @@ var meshVS = `
 `;
 
 // Fragment Shader
+// gl_FragColor = vec4(1,0,gl_FragCoord.z*gl_FragCoord.z,1);
 var meshFS = `
 	precision mediump float;
+	uniform sampler2D textGPU;
+	varying vec2 texCoord;
 	void main()
 	{		
-		gl_FragColor = vec4(1,0,gl_FragCoord.z*gl_FragCoord.z,1);
+		gl_FragColor = texture2D(textGPU,texCoord);
 	}
 `;
