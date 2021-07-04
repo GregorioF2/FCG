@@ -93,19 +93,7 @@ class MeshDrawer
 		this.textCoordsBuffer = gl.createBuffer();
 
 		this.texture = gl.createTexture();
-		
 
-		// [COMPLETAR] inicializaciones
-
-		// 1. Compilamos el programa de shaders
-		
-		// 2. Obtenemos los IDs de las variables uniformes en los shaders
-
-		// 3. Obtenemos los IDs de los atributos de los vértices en los shaders
-
-		// 4. Obtenemos los IDs de los atributos de los vértices en los shaders
-
-		// ...
 	}
 	
 	// Esta función se llama cada vez que el usuario carga un nuevo archivo OBJ.
@@ -167,19 +155,6 @@ class MeshDrawer
 		gl.enableVertexAttribArray( this.textCoord );
 
 		gl.drawArrays( gl.TRIANGLES, 0, this.numTriangles * 3 );
-
-
-		// [COMPLETAR] Completar con lo necesario para dibujar la colección de triángulos en WebGL
-		
-		// 1. Seleccionamos el shader
-	
-		// 2. Setear matriz de transformacion
-		
-	    // 3.Binding de los buffers
-		
-		// ...
-		// Dibujamos
-		// gl.drawArrays( gl.TRIANGLES, 0, this.numTriangles * 3 );
 	}
 	
 	// Esta función se llama para setear una textura sobre la malla
