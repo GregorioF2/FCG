@@ -103,18 +103,21 @@ class MeshDrawer
 	// El constructor es donde nos encargamos de realizar las inicializaciones necesarias. 
 	constructor() {
 		this.prog   = InitShaderProgram( meshVS, meshFS );
+		// uniforms
 		this.mvp = gl.getUniformLocation( this.prog, 'mvp' );
 		this.mv = gl.getUniformLocation( this.prog, 'mv' );
 		this.mn = gl.getUniformLocation( this.prog, 'mn' );
-		this.lightVec = gl.getUniformLocation( this.prog, 'lightVec' );
+		
+		this.lightVec = gl.getUniformLocation( this.prog, 'light_v' );
 		this.brightness = gl.getUniformLocation(this.prog, 'brightness');
 		
 		this.swap = gl.getUniformLocation( this.prog, 'swap' );
 		this.sampler = gl.getUniformLocation( this.prog, 'textGPU' );
 
+		// attributes
 		this.pos = gl.getAttribLocation( this.prog, 'pos' );
 		this.textCoord = gl.getAttribLocation(this.prog, 'textCoord');
-		this.normal = gl.getAttribLocation( this.prog, 'normal' );
+		this.normal = gl.getAttribLocation( this.prog, 'normal_v' );
 
 		this.vertexBuffer = gl.createBuffer();
 		this.textCoordsBuffer = gl.createBuffer();
@@ -256,37 +259,35 @@ class MeshDrawer
 
 // Vertex Shader
 var meshVS = `
-	attribute vec3 pos;
 	attribute vec2 textCoord;
-	attribute vec3 normal;
+	attribute vec3 pos;
+	attribute vec3 normal_v;
 
 
 	uniform int swap;
-	uniform vec3 lightVec;
+	uniform vec3 light_v;
 	uniform mat4 mvp;
 	uniform mat4 mv;
+	uniform mat3 mn;
 
 	varying float x;
 	varying float y;
 	varying float z;
 
 	varying vec2 texCoord;
-	varying vec3 normCoord;
-	varying vec3 vertCoord;
-	varying vec3 rVect;
+	varying vec3 normal_vector;
+	varying vec3 camera_vector;
+	varying vec3 light;
+	
 	varying float sigma;
-	varying vec3 lVect;
 
 	void main()
 	{ 
-		lVect = lightVec;
-		rVect = -1.0 * lVect + 2.0 * normCoord * dot(lVect, normCoord);
-		vertCoord = mat3(mv) * pos;
-
-		sigma = dot(vec3(-vertCoord[0], -vertCoord[1], -vertCoord[2]), rVect);
-
-		normCoord = normal;
 		texCoord = textCoord;
+		normal_vector = normalize(mn * normal_v);
+		camera_vector = normalize(vec3(-mv * vec4(pos, 1)));
+		light = normalize(light_v);
+		
 		x = pos.x;
 		if (swap == 1) {
 			y = pos.z;
@@ -298,40 +299,38 @@ var meshVS = `
 		gl_Position = mvp * vec4(x, y, z, 1);
 	}
 `;
-// vertCoord = pos;
 		
-
-// Fragment Shader
-// Algunas funciones útiles para escribir este shader:
-// Dot product: https://thebookofshaders.com/glossary/?search=dot
-// Normalize:   https://thebookofshaders.com/glossary/?search=normalize
-// Pow:         https://thebookofshaders.com/glossary/?search=pow
-
 var meshFS = `
 	precision mediump float;
 
 	uniform sampler2D textGPU;
-	uniform mat3 mn;
-	uniform mat4 mv;
 	uniform float brightness;
-
-
-	varying vec2 texCoord;
-	varying vec3 normCoord;
-	varying vec3 vertCoord;
-	varying vec3 rVect;
-	varying float sigma;
-	varying vec3 lVect;
 	
+	varying vec2 texCoord;
+	varying vec3 normal_vector;
+	varying vec3 camera_vector;
+	varying vec3 light;
 
 	void main()
 	{		
+		vec3 light_mirror;
+		float sigma;
+		vec4 kd;
+		vec4 ks;
+		vec4 I;
+		float cos_t;
+		float cos_s;
+		
+		kd = texture2D(textGPU, texCoord);
+		ks = vec4(1,1,1,1);
+		I = vec4(1,1,1,1);
 
-		gl_FragColor =
-		brightness * (
-			max(dot(normalize(mn * normCoord), lVect),0.0) * texture2D(textGPU,texCoord) 
-			+  vec4(1, 1, 1, 1) * pow(max(sigma, 0.0), 8.0)
-		);
+		cos_t = max(dot(light, normal_vector), 0.0);
+
+		light_mirror = normalize(-1.0 * light + 2.0 * normal_vector * dot(light, normal_vector));
+		cos_s = max(dot(light_mirror, camera_vector), 0.0);
+
+
+		gl_FragColor = I * (kd * cos_t + ks * pow(cos_s, brightness));
 	}
 `;
-// vert_mv = normalize(mn * vertCoord);
