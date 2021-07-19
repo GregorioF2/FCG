@@ -318,6 +318,7 @@ var meshFS = `
 		vec4 kd;
 		vec4 ks;
 		vec4 I;
+		float Ia = 0.2;
 		float cos_t;
 		float cos_s;
 		
@@ -331,6 +332,6 @@ var meshFS = `
 		cos_s = max(dot(light_mirror, camera_vector), 0.0);
 
 
-		gl_FragColor = I * (kd * cos_t + ks * pow(cos_s, brightness));
+		gl_FragColor = I * (kd * cos_t + ks * pow(cos_s, brightness)) + Ia * kd;
 	}
 `;
